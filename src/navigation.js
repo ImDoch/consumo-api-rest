@@ -1,0 +1,1 @@
+import { getTrendingMoviesPreview, getCategoriesPreview } from "./main.js";
