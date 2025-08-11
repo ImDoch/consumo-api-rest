@@ -1,8 +1,7 @@
 import { getTrendingMoviesPreview, getCategoriesPreview } from "./main.js";
+import { headerSection, trendingPreviewSection, categoriesPreviewSection, genericSection, movieDetailSection, searchForm, trendingMoviesPreviewList, categoriesPreviewList, movieDetailCategoriesList, relatedMoviesContainer, headerTitle, arrowBtn, headerCategoryTitle, searchFormInput, movieDetailTitle, movieDetailDescription, movieDetailScore } from "./nodes.js"
 
 const navigator = () => {
-    console.log({ location });
-    
     if (location.hash.startsWith('#trends')) {
         trendsPage()
         
@@ -18,28 +17,85 @@ const navigator = () => {
     }
     else {
         homePage()
-        getTrendingMoviesPreview()
-        getCategoriesPreview()
     }
 }
 
 const homePage = () => {
-    console.log('home')
+    headerSection.classList.remove('header-container--long')
+    headerSection.style.background = ''
+    arrowBtn.classList.add('inactive')
+    arrowBtn.classList.remove('header-arrow--withe')
+    headerTitle.classList.remove('inactive')
+    headerCategoryTitle.classList.add('inactive')
+    searchForm.classList.remove('inactive')
+
+    trendingPreviewSection.classList.remove('inactive')
+    categoriesPreviewSection.classList.remove('inactive')
+    genericSection.classList.add('inactive')
+    movieDetailSection.classList.add('inactive')
+
+    getTrendingMoviesPreview()
+    getCategoriesPreview()
 }
 
 const categoriesPage = () => {
-    console.log('category');
+    headerSection.classList.remove('header-container--long')
+    headerSection.style.background = ''
+    arrowBtn.classList.remove('inactive')
+    arrowBtn.classList.remove('header-arrow--withe')
+    headerTitle.classList.add('inactive')
+    headerCategoryTitle.classList.remove('inactive')
+    searchForm.classList.add('inactive')
+
+    trendingPreviewSection.classList.add('inactive')
+    categoriesPreviewSection.classList.add('inactive')
+    genericSection.classList.remove('inactive')
+    movieDetailSection.classList.add('inactive')
 }
 
 const movieDetailsPage = () => {
-    console.log('movie'); 
+    headerSection.classList.add('header-container--long')
+    //headerSection.style.background = ''
+    arrowBtn.classList.remove('inactive')
+    arrowBtn.classList.add('header-arrow--white')
+    headerTitle.classList.add('inactive')
+    headerCategoryTitle.classList.add('inactive')
+    searchForm.classList.add('inactive')
+
+    trendingPreviewSection.classList.add('inactive')
+    categoriesPreviewSection.classList.add('inactive')
+    genericSection.classList.add('inactive')
+    movieDetailSection.classList.remove('inactive')
 }
 
 const searchPage = () => {
-    console.log('search');
+    headerSection.classList.remove('header-container--long')
+    headerSection.style.background = ''
+    arrowBtn.classList.remove('inactive')
+    arrowBtn.classList.remove('header-arrow--withe')
+    headerTitle.classList.add('inactive')
+    headerCategoryTitle.classList.remove('inactive')
+    searchForm.classList.remove('inactive')
+
+    trendingPreviewSection.classList.add('inactive')
+    categoriesPreviewSection.classList.add('inactive')
+    genericSection.classList.remove('inactive')
+    movieDetailSection.classList.add('inactive')
 }
 
 const trendsPage = () => {
-    console.log('trends');
+    headerSection.classList.remove('header-container--long')
+    headerSection.style.background = ''
+    arrowBtn.classList.remove('inactive')
+    arrowBtn.classList.remove('header-arrow--withe')
+    headerTitle.classList.add('inactive')
+    headerCategoryTitle.classList.remove('inactive')
+    searchForm.classList.add('inactive')
+
+    trendingPreviewSection.classList.add('inactive')
+    categoriesPreviewSection.classList.add('inactive')
+    genericSection.classList.remove('inactive')
+    movieDetailSection.classList.add('inactive')
 }
+
 export { navigator }
