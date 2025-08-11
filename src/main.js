@@ -1,4 +1,8 @@
 import { API_KEY } from "./api.js"
+import { navigator } from "./navigation.js"
+
+window.addEventListener('DOMContentLoaded', navigator, false)
+window.addEventListener('hashchange', navigator, false)
 
 const api = axios.create({
     baseURL: 'https://api.themoviedb.org/3/',
@@ -50,8 +54,5 @@ const getCategoriesPreview = async () => {
 
     previewCategoriesContainer.append(...elements)
 }
-
-getTrendingMoviesPreview()
-getCategoriesPreview()
 
 export { getTrendingMoviesPreview, getCategoriesPreview }
