@@ -1,6 +1,6 @@
 import { API_KEY } from './api.js'
 import { navigator } from './navigation.js'
-import { trendingMoviesPreviewList, categoriesPreviewList, searchFormBtn, trendingBtn, arrowBtn, genericSection, searchFormInput, headerTitle } from './nodes.js'
+import { trendingMoviesPreviewList, categoriesPreviewList, searchFormBtn, trendingBtn, arrowBtn, genericSection, searchFormInput, headerTitle, movieDetailTitle, movieDetailDescription, movieDetailScore, movieDetailCategoriesList, headerSection, relatedMoviesContainer } from './nodes.js'
 
 //Events
 headerTitle.addEventListener('click', () => location.hash = '#home')
@@ -25,6 +25,9 @@ const createMovies = (movies, container) => {
     const elements = movies.map(movie => {
         const movieContainer = document.createElement('div')
         movieContainer.classList.add('movie-container')
+        movieContainer.addEventListener('click', () => {
+            location.hash= `#movie=${movie.id}`
+        })
 
         const movieImg = document.createElement('img')
         movieImg.classList.add('movie-img')
@@ -106,4 +109,28 @@ const getTrendingMovies = async () => {
     createMovies(movies, genericSection)
 }
 
-export { getTrendingMoviesPreview, getCategoriesPreview, getMoviesByCategory, getMoviesBySearch, getTrendingMovies }
+const getMovieDetailById = async (id) => {
+    const { data: movie } = await api(`movie/${id}`)
+    
+    const movieImgUrl = `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+    headerSection.style.background = `
+        linear-gradient(180deg, rgba(0, 0, 0, 0.35) 19.27%, rgba(0, 0, 0, 0) 29.17%), 
+        url(${movieImgUrl})`
+
+    movieDetailTitle.textContent = movie.title
+    movieDetailDescription.textContent =  movie.overview
+    movieDetailScore.textContent = movie.vote_average
+
+    createCategories(movie.genres, movieDetailCategoriesList)
+
+    getRelatedMoviesById(id)
+}
+
+const getRelatedMoviesById = async (id) => {
+    const { data } = await api(`movie/${id}/similar`)
+    const relatedMovies = data.results
+    createMovies(relatedMovies, relatedMoviesContainer)
+}
+
+
+export { getTrendingMoviesPreview, getCategoriesPreview, getMoviesByCategory, getMoviesBySearch, getTrendingMovies, getMovieDetailById }

@@ -1,4 +1,4 @@
-import { getTrendingMoviesPreview, getCategoriesPreview, getMoviesByCategory, getMoviesBySearch,getTrendingMovies } from "./main.js";
+import { getTrendingMoviesPreview, getCategoriesPreview, getMoviesByCategory, getMoviesBySearch,getTrendingMovies, getMovieDetailById } from "./main.js";
 import { headerSection, trendingPreviewSection, categoriesPreviewSection, genericSection, movieDetailSection, searchForm, trendingMoviesPreviewList, categoriesPreviewList, movieDetailCategoriesList, relatedMoviesContainer, headerTitle, arrowBtn, headerCategoryTitle, searchFormInput, movieDetailTitle, movieDetailDescription, movieDetailScore } from "./nodes.js"
 
 
@@ -64,7 +64,6 @@ const categoriesPage = () => {
 
 const movieDetailsPage = () => {
     headerSection.classList.add('header-container--long')
-    //headerSection.style.background = ''
     arrowBtn.classList.remove('inactive')
     arrowBtn.classList.add('header-arrow--white')
     headerTitle.classList.add('inactive')
@@ -75,6 +74,9 @@ const movieDetailsPage = () => {
     categoriesPreviewSection.classList.add('inactive')
     genericSection.classList.add('inactive')
     movieDetailSection.classList.remove('inactive')
+
+    const [_, movieId] = location.hash.split('=')
+    getMovieDetailById(movieId)
 }
 
 const searchPage = () => {
