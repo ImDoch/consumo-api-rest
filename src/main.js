@@ -46,6 +46,9 @@ const createMovies = (movies, container, lazyLoad = false) => {
             ? movieImg.dataset.img = `https://image.tmdb.org/t/p/w300${movie.poster_path}`
             : movieImg.src = `https://image.tmdb.org/t/p/w300${movie.poster_path}`
 
+        movieImg.addEventListener('error', () => {
+            movieImg.src = './img/404-error-robot-img.png'
+        })
         if(lazyLoad) lazyLoader.observe(movieImg)
 
         movieContainer.append(movieImg)
@@ -104,7 +107,7 @@ const getMoviesByCategory = async (id) => {
         }
     })
     const movies = data.results
-    createMovies(movies, genericSection)
+    createMovies(movies, genericSection, true)
 }
 
 const getMoviesBySearch = async (query) => {
@@ -114,13 +117,13 @@ const getMoviesBySearch = async (query) => {
         }
     })
     const movies = data.results
-    createMovies(movies, genericSection)
+    createMovies(movies, genericSection, true)
 }
 
 const getTrendingMovies = async () => {
     const { data } = await api(`trending/movie/day`)
     const movies = data.results
-    createMovies(movies, genericSection)
+    createMovies(movies, genericSection, true)
 }
 
 const getMovieDetailById = async (id) => {
@@ -143,7 +146,7 @@ const getMovieDetailById = async (id) => {
 const getRelatedMoviesById = async (id) => {
     const { data } = await api(`movie/${id}/similar`)
     const relatedMovies = data.results
-    createMovies(relatedMovies, relatedMoviesContainer)
+    createMovies(relatedMovies, relatedMoviesContainer, true)
 }
 
 

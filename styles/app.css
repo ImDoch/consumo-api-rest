@@ -365,6 +365,7 @@ footer {
     justify-content: space-between;
     flex-wrap: wrap;
     padding: 32px 24px;
+    gap: 10px;
 }
 
 .genericList-container .movie-container {
@@ -373,6 +374,7 @@ footer {
 }
 
 .genericList-container .movie-img {
+    min-height: 193px;
     width: 100%;
 }
 
