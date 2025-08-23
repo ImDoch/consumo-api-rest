@@ -21,7 +21,17 @@ window.addEventListener('DOMContentLoaded', navigator, false)
 window.addEventListener('hashchange', navigator, false)
 
 //Utils
-const createMovies = (movies, container) => {
+const lazyLoader = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+        if(entry.isIntersecting) {
+            const imgUrl = entry.target.dataset.img
+            entry.target.src = imgUrl
+            observer.unobserve(entry.target)
+        }   
+    })
+})
+
+const createMovies = (movies, container, lazyLoad = false) => {
     const elements = movies.map(movie => {
         const movieContainer = document.createElement('div')
         movieContainer.classList.add('movie-container')
@@ -32,7 +42,11 @@ const createMovies = (movies, container) => {
         const movieImg = document.createElement('img')
         movieImg.classList.add('movie-img')
         movieImg.alt = movie.title
-        movieImg.src = `https://image.tmdb.org/t/p/w300${movie.poster_path}`
+        lazyLoad 
+            ? movieImg.dataset.img = `https://image.tmdb.org/t/p/w300${movie.poster_path}`
+            : movieImg.src = `https://image.tmdb.org/t/p/w300${movie.poster_path}`
+
+        if(lazyLoad) lazyLoader.observe(movieImg)
 
         movieContainer.append(movieImg)
         return movieContainer
@@ -74,7 +88,7 @@ const api = axios.create({
 const getTrendingMoviesPreview = async () => {
     const { data } = await api(`trending/movie/day`)
     const movies = data.results
-    createMovies(movies, trendingMoviesPreviewList)
+    createMovies(movies, trendingMoviesPreviewList, true)
 }
 
 const getCategoriesPreview = async () => {
