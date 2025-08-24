@@ -1,6 +1,6 @@
 import { API_KEY } from './api.js'
 import { navigator } from './navigation.js'
-import { trendingMoviesPreviewList, categoriesPreviewList, searchFormBtn, trendingBtn, arrowBtn, genericSection, searchFormInput, headerTitle, movieDetailTitle, movieDetailDescription, movieDetailScore, movieDetailCategoriesList, headerSection, relatedMoviesContainer } from './nodes.js'
+import { trendingMoviesPreviewList, categoriesPreviewList, searchFormBtn, trendingBtn, arrowBtn, genericSection, searchFormInput, headerTitle, movieDetailTitle, movieDetailDescription, movieDetailScore, movieDetailCategoriesList, headerSection, relatedMoviesContainer, sentinel } from './nodes.js'
 
 //Events
 headerTitle.addEventListener('click', () => location.hash = '#home')
@@ -31,7 +31,28 @@ const lazyLoader = new IntersectionObserver((entries, observer) => {
     })
 })
 
-const createMovies = (movies, container, lazyLoad = false) => {
+const createInfineScrollObserver = (callback) => {
+    const infineScrollObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                callback()
+            }
+        })
+    }, {
+        rootMargin: '200px 0px'
+    })
+
+    return infineScrollObserver
+}
+
+const createMovies = (
+    movies,
+    container,
+    {
+        lazyLoad = false, 
+        clean = true
+    } = {}
+) => {
     const elements = movies.map(movie => {
         const movieContainer = document.createElement('div')
         movieContainer.classList.add('movie-container')
@@ -54,7 +75,7 @@ const createMovies = (movies, container, lazyLoad = false) => {
         movieContainer.append(movieImg)
         return movieContainer
     })
-    container.innerHTML=''
+    if (clean) container.innerHTML=''
     container.append(...elements)
 }
 
@@ -80,9 +101,6 @@ const createCategories = (categories, container) => {
 //API Calls
 const api = axios.create({
     baseURL: 'https://api.themoviedb.org/3/',
-    headers: {
-        'Content-Type': 'application/json;charset=utf-8'
-    },
     params: {
         'api_key': API_KEY,
     }
@@ -91,7 +109,7 @@ const api = axios.create({
 const getTrendingMoviesPreview = async () => {
     const { data } = await api(`trending/movie/day`)
     const movies = data.results
-    createMovies(movies, trendingMoviesPreviewList, true)
+    createMovies(movies, trendingMoviesPreviewList, {lazyLoad: true})
 }
 
 const getCategoriesPreview = async () => {
@@ -107,7 +125,7 @@ const getMoviesByCategory = async (id) => {
         }
     })
     const movies = data.results
-    createMovies(movies, genericSection, true)
+    createMovies(movies, genericSection, {lazyLoad: true, clean: true})
 }
 
 const getMoviesBySearch = async (query) => {
@@ -117,13 +135,13 @@ const getMoviesBySearch = async (query) => {
         }
     })
     const movies = data.results
-    createMovies(movies, genericSection, true)
+    createMovies(movies, genericSection, {lazyLoad: true, clean: true})
 }
 
 const getTrendingMovies = async () => {
     const { data } = await api(`trending/movie/day`)
     const movies = data.results
-    createMovies(movies, genericSection, true)
+    createMovies(movies, genericSection, {lazyLoad: true, clean: true})
 }
 
 const getMovieDetailById = async (id) => {
@@ -149,5 +167,45 @@ const getRelatedMoviesById = async (id) => {
     createMovies(relatedMovies, relatedMoviesContainer, true)
 }
 
+let page = 1;
 
-export { getTrendingMoviesPreview, getCategoriesPreview, getMoviesByCategory, getMoviesBySearch, getTrendingMovies, getMovieDetailById }
+const resetPage = () => {
+    page = 1
+}
+const getPaginatedTrendingMovies = async () => {
+    page++
+    const { data } = await api(`trending/movie/day`, {
+        params: {
+            page
+        }
+    })
+    const movies = data.results
+    createMovies(movies, genericSection, {lazyLoad: true, clean: false})
+}
+
+const getPaginatedMoviesBySearch = async (query) => {
+    page++
+    const { data } = await api('search/movie', {
+        params: {
+            query,
+            page
+        }
+    })
+    const movies = data.results
+    createMovies(movies, genericSection, {lazyLoad: true, clean: false})
+}
+
+const getPaginatedMoviesByCategory = async (id) => {
+    page++
+    const { data } = await api(`discover/movie`, {
+        params: {
+            with_genres: id,
+            page
+        }
+    })
+    const movies = data.results
+    createMovies(movies, genericSection, {lazyLoad: true, clean: false})
+}
+
+
+export { getTrendingMoviesPreview, getCategoriesPreview, getMoviesByCategory, getMoviesBySearch, getTrendingMovies, getMovieDetailById, createInfineScrollObserver, getPaginatedTrendingMovies, getPaginatedMoviesBySearch, getPaginatedMoviesByCategory, resetPage}

@@ -374,10 +374,17 @@ footer {
 }
 
 .genericList-container .movie-img {
-    min-height: 193px;
-    width: 100%;
+    aspect-ratio: 2 / 3;
+    width: 100%;   
+    object-fit: cover;
+    display: block;
 }
 
+.sentinel {
+    width: 100%;
+    height: 1px;
+    opacity: 0;
+}
 
 /* Movie Detail */
 .movieDetail-container {
