@@ -1,5 +1,7 @@
-import { getTrendingMoviesPreview, getCategoriesPreview, getMoviesByCategory, getMoviesBySearch,getTrendingMovies, getMovieDetailById, createInfineScrollObserver, getPaginatedTrendingMovies, getPaginatedMoviesBySearch, getPaginatedMoviesByCategory, resetPage} from "./main.js";
+import { getTrendingMoviesPreview, getCategoriesPreview, getMoviesByCategory, getMoviesBySearch,getTrendingMovies, getMovieDetailById, createInfineScrollObserver, getPaginatedTrendingMovies, getPaginatedMoviesBySearch, getPaginatedMoviesByCategory, state} from "./main.js";
 import { headerSection, trendingPreviewSection, categoriesPreviewSection, genericSection, movieDetailSection, searchForm, trendingMoviesPreviewList, categoriesPreviewList, movieDetailCategoriesList, relatedMoviesContainer, headerTitle, arrowBtn, headerCategoryTitle, searchFormInput, movieDetailTitle, movieDetailDescription, movieDetailScore, sentinel } from "./nodes.js"
+
+let currentObserver = null
 
 const navigator = () => {
     if (location.hash.startsWith('#trends')) {
@@ -38,6 +40,11 @@ const homePage = () => {
 
     getTrendingMoviesPreview()
     getCategoriesPreview()
+
+    if(currentObserver) {
+        currentObserver.disconnect()
+        currentObserver = null
+    }
 }
 
 const categoriesPage = () => {
@@ -60,10 +67,15 @@ const categoriesPage = () => {
 
     headerCategoryTitle.textContent = categoryName
 
-    resetPage()
+    state.page = 1
     getMoviesByCategory(categoryId)
-    const categoryObserver = createInfineScrollObserver(() => getPaginatedMoviesByCategory(categoryId))
-    categoryObserver.observe(sentinel)
+
+    if(currentObserver) {
+        currentObserver.disconnect()
+        currentObserver = null
+    }
+    currentObserver = createInfineScrollObserver(() => getPaginatedMoviesByCategory(categoryId))
+    currentObserver.observe(sentinel)
 }
 
 const movieDetailsPage = () => {
@@ -81,6 +93,11 @@ const movieDetailsPage = () => {
 
     const [_, movieId] = location.hash.split('=')
     getMovieDetailById(movieId)
+
+    if(currentObserver) {
+        currentObserver.disconnect()
+        currentObserver = null
+    }
 }
 
 const searchPage = () => {
@@ -99,10 +116,17 @@ const searchPage = () => {
     sentinel.classList.remove('inactive')
 
     const [_, queryValue] = location.hash.split('=')
-    resetPage()
+
+    state.page = 1
+
     getMoviesBySearch(queryValue)
-    const searchObserver = createInfineScrollObserver(() => getPaginatedMoviesBySearch(queryValue))
-    searchObserver.observe(sentinel)
+
+    if(currentObserver) {
+        currentObserver.disconnect()
+        currentObserver = null
+    }
+    currentObserver = createInfineScrollObserver(() => getPaginatedMoviesBySearch(queryValue))
+    currentObserver.observe(sentinel)
 }
 
 const trendsPage = () => {
@@ -122,10 +146,15 @@ const trendsPage = () => {
 
     headerCategoryTitle.textContent = 'Tendencias'
 
-    resetPage()
+    state.page = 1
     getTrendingMovies()
-    const trendingObserver = createInfineScrollObserver(getPaginatedTrendingMovies)
-    trendingObserver.observe(sentinel)
+
+    if(currentObserver) {
+        currentObserver.disconnect()
+        currentObserver = null
+    }
+    currentObserver = createInfineScrollObserver(getPaginatedTrendingMovies)
+    currentObserver.observe(sentinel)
 }
 
 

@@ -21,6 +21,11 @@ window.addEventListener('DOMContentLoaded', navigator, false)
 window.addEventListener('hashchange', navigator, false)
 
 //Utils
+const state = {
+    page: 1,
+    maxPage: undefined
+}
+
 const lazyLoader = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
         if(entry.isIntersecting) {
@@ -125,6 +130,7 @@ const getMoviesByCategory = async (id) => {
         }
     })
     const movies = data.results
+    state.maxPage = data.total_pages
     createMovies(movies, genericSection, {lazyLoad: true, clean: true})
 }
 
@@ -135,12 +141,14 @@ const getMoviesBySearch = async (query) => {
         }
     })
     const movies = data.results
+    state.maxPage = data.total_pages
     createMovies(movies, genericSection, {lazyLoad: true, clean: true})
 }
 
 const getTrendingMovies = async () => {
     const { data } = await api(`trending/movie/day`)
     const movies = data.results
+    state.maxPage = data.total_pages
     createMovies(movies, genericSection, {lazyLoad: true, clean: true})
 }
 
@@ -167,45 +175,49 @@ const getRelatedMoviesById = async (id) => {
     createMovies(relatedMovies, relatedMoviesContainer, true)
 }
 
-let page = 1;
-
-const resetPage = () => {
-    page = 1
-}
 const getPaginatedTrendingMovies = async () => {
-    page++
-    const { data } = await api(`trending/movie/day`, {
-        params: {
-            page
-        }
-    })
-    const movies = data.results
-    createMovies(movies, genericSection, {lazyLoad: true, clean: false})
+    const isNotMaxPage = state.page < state.maxPage
+    if (isNotMaxPage) {
+        state.page++
+        const { data } = await api(`trending/movie/day`, {
+            params: {
+                page: state.page
+            }
+        })
+        const movies = data.results
+        createMovies(movies, genericSection, { lazyLoad: true, clean: false })
+    }
 }
 
 const getPaginatedMoviesBySearch = async (query) => {
-    page++
-    const { data } = await api('search/movie', {
-        params: {
-            query,
-            page
-        }
-    })
-    const movies = data.results
-    createMovies(movies, genericSection, {lazyLoad: true, clean: false})
+    const isNotMaxPage = state.page < state.maxPage
+    if (isNotMaxPage) {
+        state.page++
+        const { data } = await api('search/movie', {
+            params: {
+                query,
+                page: state.page
+            }
+        })
+        const movies = data.results
+        createMovies(movies, genericSection, { lazyLoad: true, clean: false })
+    }
 }
 
 const getPaginatedMoviesByCategory = async (id) => {
-    page++
-    const { data } = await api(`discover/movie`, {
-        params: {
-            with_genres: id,
-            page
-        }
-    })
-    const movies = data.results
-    createMovies(movies, genericSection, {lazyLoad: true, clean: false})
+    const isNotMaxPage = state.page < state.maxPage
+    if (isNotMaxPage) {
+        state.page++
+        const { data } = await api(`discover/movie`, {
+            params: {
+                with_genres: id,
+                page: state.page
+            }
+        })
+        const movies = data.results
+        createMovies(movies, genericSection, { lazyLoad: true, clean: false })
+    }
 }
 
 
-export { getTrendingMoviesPreview, getCategoriesPreview, getMoviesByCategory, getMoviesBySearch, getTrendingMovies, getMovieDetailById, createInfineScrollObserver, getPaginatedTrendingMovies, getPaginatedMoviesBySearch, getPaginatedMoviesByCategory, resetPage}
+export { getTrendingMoviesPreview, getCategoriesPreview, getMoviesByCategory, getMoviesBySearch, getTrendingMovies, getMovieDetailById, createInfineScrollObserver, getPaginatedTrendingMovies, getPaginatedMoviesBySearch, getPaginatedMoviesByCategory, state}
