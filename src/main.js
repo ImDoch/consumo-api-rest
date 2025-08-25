@@ -1,6 +1,6 @@
 import { API_KEY } from './api.js'
 import { navigator } from './navigation.js'
-import { trendingMoviesPreviewList, categoriesPreviewList, searchFormBtn, trendingBtn, arrowBtn, genericSection, searchFormInput, headerTitle, movieDetailTitle, movieDetailDescription, movieDetailScore, movieDetailCategoriesList, headerSection, relatedMoviesContainer } from './nodes.js'
+import { trendingMoviesPreviewList, categoriesPreviewList, searchFormBtn, trendingBtn, arrowBtn, genericSection, searchFormInput, headerTitle, movieDetailTitle, movieDetailDescription, movieDetailScore, movieDetailCategoriesList, headerSection, relatedMoviesContainer, sentinel } from './nodes.js'
 
 //Events
 headerTitle.addEventListener('click', () => location.hash = '#home')
@@ -21,7 +21,43 @@ window.addEventListener('DOMContentLoaded', navigator, false)
 window.addEventListener('hashchange', navigator, false)
 
 //Utils
-const createMovies = (movies, container) => {
+const state = {
+    page: 1,
+    maxPage: undefined
+}
+
+const lazyLoader = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+        if(entry.isIntersecting) {
+            const imgUrl = entry.target.dataset.img
+            entry.target.src = imgUrl
+            observer.unobserve(entry.target)
+        }   
+    })
+})
+
+const createInfineScrollObserver = (callback) => {
+    const infineScrollObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                callback()
+            }
+        })
+    }, {
+        rootMargin: '200px 0px'
+    })
+
+    return infineScrollObserver
+}
+
+const createMovies = (
+    movies,
+    container,
+    {
+        lazyLoad = false, 
+        clean = true
+    } = {}
+) => {
     const elements = movies.map(movie => {
         const movieContainer = document.createElement('div')
         movieContainer.classList.add('movie-container')
@@ -32,12 +68,19 @@ const createMovies = (movies, container) => {
         const movieImg = document.createElement('img')
         movieImg.classList.add('movie-img')
         movieImg.alt = movie.title
-        movieImg.src = `https://image.tmdb.org/t/p/w300${movie.poster_path}`
+        lazyLoad 
+            ? movieImg.dataset.img = `https://image.tmdb.org/t/p/w300${movie.poster_path}`
+            : movieImg.src = `https://image.tmdb.org/t/p/w300${movie.poster_path}`
+
+        movieImg.addEventListener('error', () => {
+            movieImg.src = './img/404-error-robot-img.png'
+        })
+        if(lazyLoad) lazyLoader.observe(movieImg)
 
         movieContainer.append(movieImg)
         return movieContainer
     })
-    container.innerHTML=''
+    if (clean) container.innerHTML=''
     container.append(...elements)
 }
 
@@ -63,9 +106,6 @@ const createCategories = (categories, container) => {
 //API Calls
 const api = axios.create({
     baseURL: 'https://api.themoviedb.org/3/',
-    headers: {
-        'Content-Type': 'application/json;charset=utf-8'
-    },
     params: {
         'api_key': API_KEY,
     }
@@ -74,7 +114,7 @@ const api = axios.create({
 const getTrendingMoviesPreview = async () => {
     const { data } = await api(`trending/movie/day`)
     const movies = data.results
-    createMovies(movies, trendingMoviesPreviewList)
+    createMovies(movies, trendingMoviesPreviewList, {lazyLoad: true})
 }
 
 const getCategoriesPreview = async () => {
@@ -90,7 +130,8 @@ const getMoviesByCategory = async (id) => {
         }
     })
     const movies = data.results
-    createMovies(movies, genericSection)
+    state.maxPage = data.total_pages
+    createMovies(movies, genericSection, {lazyLoad: true, clean: true})
 }
 
 const getMoviesBySearch = async (query) => {
@@ -100,13 +141,15 @@ const getMoviesBySearch = async (query) => {
         }
     })
     const movies = data.results
-    createMovies(movies, genericSection)
+    state.maxPage = data.total_pages
+    createMovies(movies, genericSection, {lazyLoad: true, clean: true})
 }
 
 const getTrendingMovies = async () => {
     const { data } = await api(`trending/movie/day`)
     const movies = data.results
-    createMovies(movies, genericSection)
+    state.maxPage = data.total_pages
+    createMovies(movies, genericSection, {lazyLoad: true, clean: true})
 }
 
 const getMovieDetailById = async (id) => {
@@ -129,8 +172,52 @@ const getMovieDetailById = async (id) => {
 const getRelatedMoviesById = async (id) => {
     const { data } = await api(`movie/${id}/similar`)
     const relatedMovies = data.results
-    createMovies(relatedMovies, relatedMoviesContainer)
+    createMovies(relatedMovies, relatedMoviesContainer, true)
+}
+
+const getPaginatedTrendingMovies = async () => {
+    const isNotMaxPage = state.page < state.maxPage
+    if (isNotMaxPage) {
+        state.page++
+        const { data } = await api(`trending/movie/day`, {
+            params: {
+                page: state.page
+            }
+        })
+        const movies = data.results
+        createMovies(movies, genericSection, { lazyLoad: true, clean: false })
+    }
+}
+
+const getPaginatedMoviesBySearch = async (query) => {
+    const isNotMaxPage = state.page < state.maxPage
+    if (isNotMaxPage) {
+        state.page++
+        const { data } = await api('search/movie', {
+            params: {
+                query,
+                page: state.page
+            }
+        })
+        const movies = data.results
+        createMovies(movies, genericSection, { lazyLoad: true, clean: false })
+    }
+}
+
+const getPaginatedMoviesByCategory = async (id) => {
+    const isNotMaxPage = state.page < state.maxPage
+    if (isNotMaxPage) {
+        state.page++
+        const { data } = await api(`discover/movie`, {
+            params: {
+                with_genres: id,
+                page: state.page
+            }
+        })
+        const movies = data.results
+        createMovies(movies, genericSection, { lazyLoad: true, clean: false })
+    }
 }
 
 
-export { getTrendingMoviesPreview, getCategoriesPreview, getMoviesByCategory, getMoviesBySearch, getTrendingMovies, getMovieDetailById }
+export { getTrendingMoviesPreview, getCategoriesPreview, getMoviesByCategory, getMoviesBySearch, getTrendingMovies, getMovieDetailById, createInfineScrollObserver, getPaginatedTrendingMovies, getPaginatedMoviesBySearch, getPaginatedMoviesByCategory, state}

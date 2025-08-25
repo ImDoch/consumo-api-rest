@@ -365,6 +365,7 @@ footer {
     justify-content: space-between;
     flex-wrap: wrap;
     padding: 32px 24px;
+    gap: 10px;
 }
 
 .genericList-container .movie-container {
@@ -373,9 +374,17 @@ footer {
 }
 
 .genericList-container .movie-img {
-    width: 100%;
+    aspect-ratio: 2 / 3;
+    width: 100%;   
+    object-fit: cover;
+    display: block;
 }
 
+.sentinel {
+    width: 100%;
+    height: 1px;
+    opacity: 0;
+}
 
 /* Movie Detail */
 .movieDetail-container {
